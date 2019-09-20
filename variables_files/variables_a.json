@@ -1,0 +1,11 @@
+{
+    "aws_key_name": "Ohio",
+    "csr_a_tunnel_1_ip": "192.168.254.2",
+    "csr_a_tunnel_1_netmask": "255.255.255.0",
+    "csr_b_tunnel_1_ip": "192.168.254.3",
+    "csr_b_tunnel_1_netmask": "255.255.255.0",
+    "dmvpn_secret": "HardPasswordtoGuess",
+    "h1_private": "192.168.254.1",
+    "h1_public": "52.14.188.112",
+    "asn": "65535"
+}
