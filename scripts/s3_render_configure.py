@@ -25,53 +25,49 @@ __license__ = "Cisco Sample Code License, Version 1.1"
 from cli import configurep
 from cli import cli
 import json
+import sys
+import time
 
 from jinja2 import Template
 import boto3
 
 
-def get_names_from_loopback_999_description():
-    try:
-        description = cli("show interface Loopback999 description")
-    except Exception as e:
-        print('error retrieving Loopback999 description')
-        print(e)
-        exit()
-    try:
-        results_dict = dict()
-        index = description.find('CRON_ARGUMENTS')
-        description_text = description[index:]
-        argument_list = description_text.split()
-        results_dict['bucket_name'] = argument_list[1]
-        results_dict['template_file'] = argument_list[2]
-        results_dict['variables_file'] = argument_list[3]
-    except Exception as e:
-        print('error parsing Loopback999 description')
-        print(e)
-        exit()
-
-    return results_dict
-
-
 def generate_configuration(s3_dict):
-    try:
-        s3 = boto3.client('s3')
-        data = s3.get_object(Bucket=s3_dict['bucket_name'], Key=s3_dict['template_file'])
-        contents = data['Body'].read()
-        data = contents.decode()
-        template = data.split('\n')
-    except Exception as e:
-        print('error retrieving template')
-        print(e)
+    counter = 0
+    while counter < 5:
+        try:
+            s3 = boto3.client('s3')
+            data = s3.get_object(Bucket=s3_dict['bucket_name'], Key=s3_dict['template_file'])
+            contents = data['Body'].read()
+            data = contents.decode()
+            template = data.split('\n')
+            break
+        except Exception as e:
+            print('error retrieving template')
+            print(e)
+            counter += 1
+            time.sleep(10)
+
+    if counter == 5:
+        print('too many failures retrieving template, Exiting...')
         exit()
-    try:
-        data = s3.get_object(Bucket=s3_dict['bucket_name'], Key=s3_dict['variables_file'])
-        contents = data['Body'].read()
-        data = contents.decode()
-        variables_dict = json.loads(data)
-    except Exception as e:
-        print('error retrieving variables')
-        print(e)
+
+    counter = 0
+    while counter < 5:
+        try:
+            data = s3.get_object(Bucket=s3_dict['bucket_name'], Key=s3_dict['variables_file'])
+            contents = data['Body'].read()
+            data = contents.decode()
+            variables_dict = json.loads(data)
+            break
+        except Exception as e:
+            print('error retrieving variables')
+            print(e)
+            counter += 1
+            time.sleep(10)
+
+    if counter == 5:
+        print('too many failures retrieving variables, Exiting...')
         exit()
 
     # Render Configuration
@@ -99,6 +95,11 @@ def configure_router(conf_list):
 
 
 if __name__ == '__main__':
-    s3_info = get_names_from_loopback_999_description()
+    if len(sys.argv) != 4:
+        print('Must have 3 arguments to run script: $bucket_name, $template_file, $variables_file')
+        exit()
+    s3_info = dict(bucket_name=sys.argv[1],
+                   template_file=sys.argv[2],
+                   variables_file=sys.argv[3])
     config = generate_configuration(s3_info)
     configure_router(config)

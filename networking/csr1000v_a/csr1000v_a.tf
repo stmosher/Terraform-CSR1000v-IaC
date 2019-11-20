@@ -16,11 +16,14 @@ resource "aws_instance" "csr1000v_a" {
   associate_public_ip_address = true
   source_dest_check           = true
   user_data                   = <<CONFIG
-ios-config-0001="ip http server"
-ios-config-0002="interface Loopback999"
-ios-config-0003=" description CRON_ARGUMENTS ${var.s3_bucket_name} ${var.router_a_s3_template_file} ${var.router_a_s3_variables_file}"
-ios-config-0004="end"
-ios-config-0005="write memory"
+ios-config-0001="event manager applet onboot"
+ios-config-0002="event timer countdown time 60"
+ios-config-0003="action 0.0 cli command &quot;en&quot;"
+ios-config-0004="action 1.0 cli command &quot;guestshell run python /bootflash/s3_render_configure.py ${var.s3_bucket_name} ${var.router_a_s3_template_file} ${var.router_a_s3_variables_file}&quot;"
+ios-config-0005="action 2.0 cli command &quot;write memory&quot;"
+ios-config-0006="exit"
+ios-config-0007="exit"
+ios-config-0008="write memory"
 CONFIG
   iam_instance_profile        = "${var.s3_access_iam_role}"
   tags = {

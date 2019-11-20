@@ -12,16 +12,12 @@ configuration template file and json variables file. The router will then config
 3. Access Guestshell Bash environment
     - `````` guestshell run bash ``````
 4. Install dependencies
+    - ```````` sudo python -m pip install --upgrade pip ```````` 
     - ```````` sudo pip install boto3 ```````` 
-    - ```````` sudo pip install jinja2 ```````` 
-5. Create s3_render_configure.py and copy contents from this repository to /home/guestshell
-6. Create run_pscript.sh can copy contents from this repository to /home/guestshell
-7. Make both files executable
-    - ```````` chmod 700 $INSERTFILENAME ```````` 
-8. Add job to crontab: crontab -e: e.g.,
-    - ````````*/2 * * * * . $HOME/.bash_profile; /home/guestshell/run_pscript.sh >> ~/log 2>&1````````
-9. Create AMI for instance
-10. Give Future deployed router IAM role with permission to access your S3 configuration files
+    - ```````` sudo pip install jinja2 ````````  
+5. In guestshell, create /bootflash/s3_render_configure.py with contents from this repository's ./scripts/s3_render_configure.py
+6. Create AMI from instance
+7. Give Future deployed router IAM role with permission to access your S3 configuration files
 ````````
 For permission example
 {
@@ -48,3 +44,6 @@ For permission example
 2. Launch using terraform
 
 The router will boot up and pull its configuration from S3.
+
+To debug EEM use: 
+    - ```````` debug event manager action cli ````````  
